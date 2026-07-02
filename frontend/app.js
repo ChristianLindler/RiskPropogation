@@ -40,7 +40,6 @@ function renderNotifs() {
       const a = n.alert;
       return `
         <div class="notif-item ${n.read ? "" : "unread"}" data-i="${i}">
-          <div class="notif-item-why">${a.cause.summary}</div>
           <div class="notif-item-title">${a.entity_name}
             <span class="delta">+${Math.round(a.delta * 100)}%</span>
           </div>
@@ -133,6 +132,28 @@ function renderMain() {
     <p class="detail-desc">${wl.description}</p>`;
 }
 
+function onMessage(msg) {
+  if (msg.type === "entity_update") {
+    onEntityUpdate(msg);
+  } else {
+    onAlert(msg);
+  }
+}
+
+function onEntityUpdate(u) {
+  const e = entity(u.entity_id);
+  if (e) {
+    e.current_risk = u.new_risk;
+    e.band = u.new_band;
+  }
+  render();
+  if (u.entity_id) {
+    requestAnimationFrame(() => {
+      main.querySelector(`[data-id="${u.entity_id}"]`)?.classList.add("flash");
+    });
+  }
+}
+
 function onAlert(alert) {
   const e = entity(alert.entity_id);
   if (e) {
@@ -189,7 +210,7 @@ async function init() {
     renderNotifs();
     render();
     sse = new EventSource("/events");
-    sse.onmessage = (ev) => onAlert(JSON.parse(ev.data));
+    sse.onmessage = (ev) => onMessage(JSON.parse(ev.data));
   } catch (err) {
     main.innerHTML = `<div class="empty-state">
       <p>Server not running.</p>

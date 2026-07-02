@@ -114,9 +114,24 @@ async def ingest_entity(body: IngestEntityIn) -> dict[str, Any]:
         body.id,
         trigger_kind="score_update" if is_update else "new_entity",
     )
-    for alert in alerts:
+
+    async def broadcast(message: dict[str, Any]) -> None:
         for queue in sse_queues:
-            await queue.put(alert)
+            await queue.put(message)
+
+    # Sync every affected score to the dashboard, even entities that don't alert.
+    for item in affected:
+        await broadcast(
+            {
+                "type": "entity_update",
+                "entity_id": item.id,
+                "new_risk": round(item.new_risk, 4),
+                "new_band": item.new_band,
+            }
+        )
+
+    for alert in alerts:
+        await broadcast({"type": "alert", **alert})
 
     return {
         "ingested": body.id,
