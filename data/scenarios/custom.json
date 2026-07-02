@@ -1,0 +1,7 @@
+{
+  "id": "risky_subsidiary",
+  "name": "Risky Subsidiary",
+  "base_risk": 0.85,
+  "attributes": { "type": "org", "role": "subsidiary" },
+  "relationships": []
+}

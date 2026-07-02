@@ -63,7 +63,7 @@ curl -X POST http://localhost:8000/ingest-entity \
 
 #### 2 — Risky Board Director (new entity, high risk)
 
-A **new person at 90% risk** gains a board-style tie to Clean Third Party. The director is not on a watchlist; the alert is on the **watched** third party.
+A **new person at 90% risk** gains a board-style tie to Clean Third Party. The director is not on a watchlist; the alert is on the watched third party.
 
 **Watch:** Third-Party Counterparties — Clean Third Party. Bell text: *"New entity Risky Board Director increased risk for Clean Third Party"*.
 
@@ -74,9 +74,9 @@ curl -X POST http://localhost:8000/ingest-entity \
   -d @data/scenarios/ingest_risky_board_director.json
 ```
 
-#### 3 — Risky Subsidiary score update (optional)
+#### 3 — Risky Subsidiary score update
 
-Re-score an **existing** entity to 85%. Shows the update path and a cross-watchlist hit on Supplier Co.
+Re-score an existing entity to 85%. Shows the update path and a cross-watchlist hit on Supplier Co.
 
 ```bash
 curl -X POST http://localhost:8000/reset
