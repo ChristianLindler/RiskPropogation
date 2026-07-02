@@ -113,14 +113,3 @@ curl -X POST http://localhost:8000/ingest-entity \
   -H "Content-Type: application/json" \
   -d @data/scenarios/ingest_minor_vendor.json
 ```
-
----
-
-## Code layout
-
-```
-backend/     config, graph, propagation, subscriptions, alerts, main
-data/        graph.json + scenarios/
-frontend/    dashboard
-docs/        demo-graph.html
-```
