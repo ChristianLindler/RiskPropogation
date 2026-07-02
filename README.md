@@ -4,6 +4,8 @@ A demo of risk propagating through a knowledge graph and watchlist based alerts.
 
 Ingest a new entity or update an existing one's risk. The engine walks the graph, updates scores on connected nodes, and pushes notifications when a watched entity crosses into medium or high risk.
 
+<img width="1721" height="539" alt="Screenshot 2026-07-02 at 12 18 16 AM" src="https://github.com/user-attachments/assets/e2c405b3-e3ff-4c83-8dbd-4d511403720e" />
+
 ---
 
 ## What it does
