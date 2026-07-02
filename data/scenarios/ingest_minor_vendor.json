@@ -1,0 +1,9 @@
+{
+  "id": "minor_vendor",
+  "name": "Minor Vendor",
+  "base_risk": 0.20,
+  "attributes": { "type": "org", "role": "supplier" },
+  "relationships": [
+    { "target": "risky_subsidiary", "type": "supplies_to" }
+  ]
+}

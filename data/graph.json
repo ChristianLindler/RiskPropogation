@@ -1,0 +1,82 @@
+{
+  "entities": [
+    {
+      "id": "parent_holding",
+      "name": "Parent Holding Co",
+      "base_risk": 0.1,
+      "attributes": { "type": "org", "role": "holding_company" }
+    },
+    {
+      "id": "risky_subsidiary",
+      "name": "Risky Subsidiary",
+      "base_risk": 0.1,
+      "attributes": { "type": "org", "role": "subsidiary" }
+    },
+    {
+      "id": "sister_subsidiary",
+      "name": "Sister Subsidiary",
+      "base_risk": 0.1,
+      "attributes": { "type": "org", "role": "subsidiary" }
+    },
+    {
+      "id": "clean_third_party",
+      "name": "Clean Third Party",
+      "base_risk": 0.05,
+      "attributes": { "type": "org", "role": "independent" }
+    },
+    {
+      "id": "supplier_co",
+      "name": "Supplier Co",
+      "base_risk": 0.1,
+      "attributes": { "type": "org", "role": "supplier" }
+    },
+    {
+      "id": "control_co",
+      "name": "Control Co (Unrelated)",
+      "base_risk": 0.05,
+      "attributes": { "type": "org", "role": "independent" }
+    },
+    {
+      "id": "board_director",
+      "name": "Board Director",
+      "base_risk": 0.15,
+      "attributes": { "type": "person", "role": "board_director" }
+    },
+    {
+      "id": "ceo_person",
+      "name": "CEO Person",
+      "base_risk": 0.05,
+      "attributes": { "type": "person", "role": "ceo" }
+    }
+  ],
+  "relationships": [
+    { "source": "risky_subsidiary", "target": "parent_holding", "type": "subsidiary_of" },
+    { "source": "sister_subsidiary", "target": "parent_holding", "type": "subsidiary_of" },
+    { "source": "parent_holding", "target": "sister_subsidiary", "type": "owns" },
+    { "source": "parent_holding", "target": "risky_subsidiary", "type": "owns" },
+    { "source": "supplier_co", "target": "risky_subsidiary", "type": "supplies_to" },
+    { "source": "board_director", "target": "risky_subsidiary", "type": "affiliated_with", "attributes": { "role": "board_director" } },
+    { "source": "risky_subsidiary", "target": "control_co", "type": "attended_event_with", "attributes": { "event": "Industry Summit 2025" } },
+    { "source": "ceo_person", "target": "clean_third_party", "type": "ceo_of" }
+  ],
+  "watchlists": [
+    {
+      "id": "wl_corporate_family",
+      "name": "Corporate Family",
+      "description": "Parent Holding Co and Sister Subsidiary are linked to Risky Subsidiary through ownership. Alerts fire when new risk reaches them — e.g. a new vendor or a score change on the subsidiary.",
+      "entities": ["sister_subsidiary", "parent_holding", "risky_subsidiary"]
+    },
+    {
+      "id": "wl_counterparties",
+      "name": "Third-Party Counterparties",
+      "description": "Clean Third Party and Supplier Co sit outside the corporate family. A new person or company linking into this group can still move their scores.",
+      "entities": ["clean_third_party", "supplier_co"]
+    },
+    {
+      "id": "wl_personnel",
+      "name": "Board & Leadership Links",
+      "description": "Board Director and CEO Person connect organizations. A director with ties to multiple firms can propagate risk across boundaries.",
+      "entities": ["board_director", "ceo_person"]
+    }
+  ]
+}

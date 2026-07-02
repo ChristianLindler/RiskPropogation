@@ -1,0 +1,13 @@
+{
+  "id": "clean_advisor",
+  "name": "Clean Advisor",
+  "base_risk": 0.15,
+  "attributes": { "type": "person", "role": "advisor" },
+  "relationships": [
+    {
+      "target": "clean_third_party",
+      "type": "affiliated_with",
+      "attributes": { "role": "advisor" }
+    }
+  ]
+}

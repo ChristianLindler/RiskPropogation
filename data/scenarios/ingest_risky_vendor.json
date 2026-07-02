@@ -1,0 +1,9 @@
+{
+  "id": "risky_vendor",
+  "name": "Risky Vendor",
+  "base_risk": 0.90,
+  "attributes": { "type": "org", "role": "supplier" },
+  "relationships": [
+    { "target": "risky_subsidiary", "type": "supplies_to" }
+  ]
+}
