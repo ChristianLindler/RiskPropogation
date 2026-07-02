@@ -45,6 +45,7 @@ Open **http://localhost:8000**. Run **`POST /reset`** before each scenario below
 ---
 
 ## Demo scenarios
+<img width="1501" height="577" alt="Screenshot 2026-07-01 at 10 05 00 PM" src="https://github.com/user-attachments/assets/53123f06-4e0a-452a-8df6-eb22e856fa87" />
 
 ### Alerts expected
 
