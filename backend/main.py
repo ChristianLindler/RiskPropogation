@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 from backend.alerts import build_alerts
 from backend.config import risk_band
 from backend.graph import Edge, Entity, Graph
-from backend.propagation import propagate
+from backend.propagation import AffectedEntity, propagate
 from backend.subscriptions import SubscriptionIndex
 
 DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "graph.json"
@@ -100,27 +100,65 @@ async def ingest_entity(body: IngestEntityIn) -> dict[str, Any]:
     edges = [
         Edge(body.id, rel.target, rel.type, rel.attributes) for rel in body.relationships
     ]
-    is_update = body.id in graph.entities
+    existing = graph.get_entity(body.id)
+    is_update = existing is not None
+    source_old_risk = existing.current_risk if existing is not None else None
     try:
         graph.add_entity(entity, edges, upsert=True)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     affected = propagate(graph, body.id)
+
+    source_change: AffectedEntity | None = None
+    updated_source = graph.get_entity(body.id)
+    if (
+        is_update
+        and source_old_risk is not None
+        and updated_source is not None
+        and updated_source.current_risk > source_old_risk
+    ):
+        source_change = AffectedEntity(
+            id=updated_source.id,
+            name=updated_source.name,
+            old_risk=source_old_risk,
+            new_risk=updated_source.current_risk,
+            old_band=risk_band(source_old_risk),
+            new_band=risk_band(updated_source.current_risk),
+        )
+
     alerts = build_alerts(
         graph,
         subscriptions,
         affected,
         body.id,
         trigger_kind="score_update" if is_update else "new_entity",
+        source_change=source_change,
     )
 
     async def broadcast(message: dict[str, Any]) -> None:
         for queue in sse_queues:
             await queue.put(message)
 
-    # Sync every affected score to the dashboard, even entities that don't alert.
+    # Sync every changed score to the dashboard, even entities that don't alert.
+    # The ingested/updated entity is not in `affected` (propagation only returns
+    # nodes it reaches), so sync it explicitly.
+    updated_ids: set[str] = set()
+    ingested = graph.get_entity(body.id)
+    if ingested is not None:
+        updated_ids.add(ingested.id)
+        await broadcast(
+            {
+                "type": "entity_update",
+                "entity_id": ingested.id,
+                "new_risk": round(ingested.current_risk, 4),
+                "new_band": risk_band(ingested.current_risk),
+            }
+        )
+
     for item in affected:
+        if item.id in updated_ids:
+            continue
         await broadcast(
             {
                 "type": "entity_update",

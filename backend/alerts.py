@@ -49,12 +49,41 @@ def build_alerts(
     source_entity_id: str,
     *,
     trigger_kind: TriggerKind = "new_entity",
+    source_change: AffectedEntity | None = None,
 ) -> list[dict[str, Any]]:
     source = graph.get_entity(source_entity_id)
     trigger_name = source.name if source else source_entity_id
     timestamp = datetime.now(timezone.utc).isoformat()
 
     alerts: list[dict[str, Any]] = []
+
+    # A watched entity whose score was set directly should notify on itself,
+    # regardless of band crossing — the change was a deliberate backend action.
+    if source_change is not None:
+        for watchlist_id in subscriptions.watchlists_for(source_change.id):
+            watchlist = subscriptions.watchlist_by_id(watchlist_id)
+            if watchlist is None:
+                continue
+            alerts.append(
+                {
+                    "watchlist_id": watchlist_id,
+                    "watchlist_name": watchlist.name,
+                    "entity_id": source_change.id,
+                    "entity_name": source_change.name,
+                    "trigger_id": source_change.id,
+                    "trigger_name": source_change.name,
+                    "trigger_kind": "score_update",
+                    "old_band": source_change.old_band,
+                    "new_band": source_change.new_band,
+                    "old_risk": round(source_change.old_risk, 4),
+                    "new_risk": round(source_change.new_risk, 4),
+                    "delta": round(source_change.delta, 4),
+                    "cause": {
+                        "summary": f"Risk score for {source_change.name} was updated directly on the backend"
+                    },
+                    "timestamp": timestamp,
+                }
+            )
 
     for item in affected:
         watching = subscriptions.watchlists_for(item.id)
